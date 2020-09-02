@@ -3,6 +3,8 @@ import urllib
 import bs4
 import re
 import json
+import schedule
+import time
 import pdb
 
 def format_discount_html(discounts):
@@ -90,6 +92,26 @@ def parse_reddit_gamedeal():
             continue
     return free_games
 
-deals = parse_reddit_gamedeal() + parse_steamdb()
-if len(deals) != 0:
-    send_email("creds.json", deals)
+game_list = []
+def job():
+    global game_list
+    deals = parse_reddit_gamedeal() + parse_steamdb()
+    new_games = []
+    # Add new games
+    for g in deals:
+        if g not in game_list:
+            new_games.append(g)
+    game_list = deals
+    deals = new_games
+
+    if len(deals) != 0:
+        print(deals)
+        send_email("creds.json", deals)
+
+schedule.every(4).hours.do(job)
+#schedule.every(10).seconds.do(job)
+#schedule.every(1).minutes.do(job)
+#schedule.every().day.at("22:57").do(job)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
