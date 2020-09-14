@@ -4,6 +4,7 @@ import requests
 import bs4
 import re
 import json
+import html
 import schedule
 import time
 import pdb
@@ -11,8 +12,8 @@ import pdb
 def format_discount_html(discounts):
     res = "<h2>Games found</h2>\n<ul>"
     for d in discounts:
-        res += "<li>" + d["name"] + "<a href=\"" + d["url"] + "\">"
-        res += "[" + d["vendor"] + "]" + "(" + d["discount"] + ")"
+        res += "<li>" + html.escape(d["name"]) + "<a href=\"" + html.escape(d["url"]) + "\">"
+        res += "[" + html.escape(d["vendor"]) + "]" + "(" + html.escape(d["discount"]) + ")"
         res += "</a><br>" + "</li>\n"
     res += "</ul>"
     return res
@@ -29,6 +30,7 @@ def send_email(creds_path, discounts):
     server.starttls()
     server.login(fromAddress, password)
     msg = "From:{}\nTO:{}\nContent-type: text/html\nSubject:Free game detected\n\n{}".format(fromAddress, toAddress, format_discount_html(discounts))
+    msg = msg.encode('ascii', 'ignore')
     print(msg)
 
     server.sendmail(toAddress, toAddress, msg)
@@ -107,7 +109,7 @@ def job():
 
     if len(deals) != 0:
         print(deals)
-        #send_email("creds.json", deals)
+        send_email("creds.json", deals)
 
 schedule.every(4).hours.do(job)
 #schedule.every(10).seconds.do(job)
