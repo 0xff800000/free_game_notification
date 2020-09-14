@@ -1,5 +1,6 @@
 import smtplib
-import urllib
+#import urllib
+import requests
 import bs4
 import re
 import json
@@ -37,8 +38,8 @@ def send_email(creds_path, discounts):
 def parse_steamdb():
     url = "https://steamdb.info"
     vendor = "steam"
-    req = urllib.request.Request(url+"/sales", headers={'User-Agent' : "Magic Browser"}) 
-    page = urllib.request.urlopen(req)
+    req = requests.get(url+"/sales", headers={'User-Agent' : "Magic Browser"}) 
+    page = req.content
 
     soup = bs4.BeautifulSoup(page, "lxml")
     table = soup.find_all("tr")
@@ -64,8 +65,8 @@ def parse_steamdb():
 
 def parse_reddit_gamedeal():
     url = "https://old.reddit.com/r/GameDeals/"
-    req = urllib.request.Request(url, headers={'User-Agent' : "Magic Browser"}) 
-    page = urllib.request.urlopen(req)
+    req = requests.get(url, headers={'User-Agent' : "Magic Browser"}) 
+    page = req.content
 
     soup = bs4.BeautifulSoup(page, "lxml")
 
@@ -106,7 +107,7 @@ def job():
 
     if len(deals) != 0:
         print(deals)
-        send_email("creds.json", deals)
+        #send_email("creds.json", deals)
 
 schedule.every(4).hours.do(job)
 #schedule.every(10).seconds.do(job)
