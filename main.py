@@ -1,5 +1,4 @@
 import smtplib
-#import urllib
 import requests
 import bs4
 import re
@@ -7,7 +6,10 @@ import json
 import html
 import schedule
 import time
+import telepot
+import pickle
 import pdb
+from telepot.loop import MessageLoop
 
 def format_discount_html(discounts):
     res = "<h2>Games found</h2>\n<ul>"
@@ -95,6 +97,7 @@ def parse_reddit_gamedeal():
             continue
     return free_games
 
+
 game_list = []
 def job():
     global game_list
@@ -109,12 +112,43 @@ def job():
 
     if len(deals) != 0:
         print(deals)
-        send_email("creds.json", deals)
+        try:
+            send_email("creds.json", deals)
+        except:
+            pass
+        try:
+            send_telegram(deals)
+        except:
+            pass
 
-schedule.every(4).hours.do(job)
-#schedule.every(10).seconds.do(job)
-#schedule.every(1).minutes.do(job)
-#schedule.every().day.at("22:57").do(job)
+# Register new chats
+def telegram_handle(msg):
+    chat_id = msg["chat"]["id"]
+    if chat_id not in chat_ids:
+        chat_ids.append(chat_id)
+        pickle.dump(chat_ids, open("chat_ids.pk","wb"))
+
+def telegram_format_deal(deal):
+    return "{} ({}) : \n {}".format(deal["name"], deal["vendor"], deal["url"])
+
+def send_telegram(deals):
+    for ids in chat_ids:
+        for d in deals:
+            bot.sendMessage(ids, telegram_format_deal(d))
+
+# Load previous chats
+chat_ids = []
+try:
+    chat_ids = pickle.load(open("chat_ids.pk","rb"))
+except:
+    pass
+
+
+API_TOKEN = json.load(open("creds.json"))["TELEGRAM_TOKEN"]
+bot = telepot.Bot(API_TOKEN)
+MessageLoop(bot, telegram_handle).run_as_thread()
+
+schedule.every(1).hours.do(job)
 while True:
     schedule.run_pending()
     time.sleep(1)

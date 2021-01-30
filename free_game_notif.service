@@ -1,0 +1,12 @@
+[Unit]
+Description=Free game notification service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/programs/free_game_notification
+ExecStart=/usr/bin/python3 /home/pi/programs/free_game_notification/main.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
