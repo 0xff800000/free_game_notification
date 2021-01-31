@@ -148,7 +148,7 @@ API_TOKEN = json.load(open("creds.json"))["TELEGRAM_TOKEN"]
 bot = telepot.Bot(API_TOKEN)
 MessageLoop(bot, telegram_handle).run_as_thread()
 
-schedule.every(1).hours.do(job)
+schedule.every(30).minutes.do(job)
 while True:
     schedule.run_pending()
     time.sleep(1)
